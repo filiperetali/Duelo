@@ -3521,6 +3521,29 @@ lastTapTime=-1E4;return"double-tap"}else{lastTapX=this._x;lastTapY=this._y;lastT
 }
 
 {
+'use strict';{const C3=self.C3;C3.Plugins.Mouse=class MousePlugin extends C3.SDKPluginBase{constructor(opts){super(opts)}Release(){super.Release()}}}
+{const C3=self.C3;const C3X=self.C3X;C3.Plugins.Mouse.Type=class MouseType extends C3.SDKTypeBase{constructor(objectClass){super(objectClass)}Release(){super.Release()}OnCreate(){}GetScriptInterfaceClass(){return self.IMouseObjectType}};let mouseObjectType=null;function GetMouseSdkInstance(){return mouseObjectType.GetSingleGlobalInstance().GetSdkInstance()}self.IMouseObjectType=class IMouseObjectType extends self.IObjectClass{constructor(objectType){super(objectType);mouseObjectType=objectType;objectType.GetRuntime()._GetCommonScriptInterfaces().mouse=
+this}getMouseX(layerNameOrNumber){return GetMouseSdkInstance().GetMousePositionForLayer(layerNameOrNumber)[0]}getMouseY(layerNameOrNumber){return GetMouseSdkInstance().GetMousePositionForLayer(layerNameOrNumber)[1]}getMousePosition(layerNameOrNumber){return GetMouseSdkInstance().GetMousePositionForLayer(layerNameOrNumber)}isMouseButtonDown(button){return GetMouseSdkInstance().IsMouseButtonDown(button)}}}
+{const C3=self.C3;const DOM_COMPONENT_ID="mouse";C3.Plugins.Mouse.Instance=class MouseInstance extends C3.SDKInstanceBase{constructor(inst,properties){super(inst,DOM_COMPONENT_ID);this._buttonMap=[false,false,false];this._mouseXcanvas=0;this._mouseYcanvas=0;this._triggerButton=0;this._triggerType=0;this._triggerDir=0;this._hasPointerLock=false;this._movementX=0;this._movementY=0;this.AddDOMMessageHandlers([["pointer-lock-change",e=>this._OnPointerLockChange(e)],["pointer-lock-error",e=>this._OnPointerLockError(e)]]);
+const rt=this.GetRuntime().Dispatcher();this._disposables=new C3.CompositeDisposable(C3.Disposable.From(rt,"pointermove",e=>this._OnPointerMove(e.data)),C3.Disposable.From(rt,"pointerdown",e=>this._OnPointerDown(e.data)),C3.Disposable.From(rt,"pointerup",e=>this._OnPointerUp(e.data)),C3.Disposable.From(rt,"dblclick",e=>this._OnDoubleClick(e.data)),C3.Disposable.From(rt,"wheel",e=>this._OnMouseWheel(e.data)),C3.Disposable.From(rt,"window-blur",()=>this._OnWindowBlur()))}Release(){super.Release()}_OnPointerDown(e){if(e["pointerType"]!==
+"mouse")return;this._mouseXcanvas=e["pageX"]-this._runtime.GetCanvasClientX();this._mouseYcanvas=e["pageY"]-this._runtime.GetCanvasClientY();this._CheckButtonChanges(e["lastButtons"],e["buttons"])}_OnPointerMove(e){this._movementX=e["movementX"];this._movementY=e["movementY"];this.Trigger(C3.Plugins.Mouse.Cnds.OnMovement);this._movementX=0;this._movementY=0;if(e["pointerType"]!=="mouse")return;this._mouseXcanvas=e["pageX"]-this._runtime.GetCanvasClientX();this._mouseYcanvas=e["pageY"]-this._runtime.GetCanvasClientY();
+this._CheckButtonChanges(e["lastButtons"],e["buttons"])}_OnPointerUp(e){if(e["pointerType"]!=="mouse")return;this._CheckButtonChanges(e["lastButtons"],e["buttons"])}_CheckButtonChanges(lastButtons,buttons){this._CheckButtonChange(lastButtons,buttons,1,0);this._CheckButtonChange(lastButtons,buttons,4,1);this._CheckButtonChange(lastButtons,buttons,2,2)}_CheckButtonChange(lastButtons,buttons,checkButtonFlag,resultButton){if(!(lastButtons&checkButtonFlag)&&buttons&checkButtonFlag)this._OnMouseDown(resultButton);
+else if(lastButtons&checkButtonFlag&&!(buttons&checkButtonFlag))this._OnMouseUp(resultButton)}_OnMouseDown(button){this._buttonMap[button]=true;this.Trigger(C3.Plugins.Mouse.Cnds.OnAnyClick);this._triggerButton=button;this._triggerType=0;this.Trigger(C3.Plugins.Mouse.Cnds.OnClick);this.Trigger(C3.Plugins.Mouse.Cnds.OnObjectClicked)}_OnMouseUp(button){if(!this._buttonMap[button])return;this._buttonMap[button]=false;this._triggerButton=button;this.Trigger(C3.Plugins.Mouse.Cnds.OnRelease)}_OnDoubleClick(e){this._triggerButton=
+e["button"];this._triggerType=1;this.Trigger(C3.Plugins.Mouse.Cnds.OnClick);this.Trigger(C3.Plugins.Mouse.Cnds.OnObjectClicked)}_OnMouseWheel(e){this._triggerDir=e["deltaY"]<0?1:0;this.Trigger(C3.Plugins.Mouse.Cnds.OnWheel)}_OnWindowBlur(){for(let i=0,len=this._buttonMap.length;i<len;++i){if(!this._buttonMap[i])return;this._buttonMap[i]=false;this._triggerButton=i;this.Trigger(C3.Plugins.Mouse.Cnds.OnRelease)}}GetMousePositionForLayer(layerNameOrNumber){const layout=this._runtime.GetMainRunningLayout();
+const x=this._mouseXcanvas;const y=this._mouseYcanvas;if(typeof layerNameOrNumber==="undefined"){const layer=layout.GetLayerByIndex(0);return layer.CanvasCssToLayer_DefaultTransform(x,y)}else{const layer=layout.GetLayer(layerNameOrNumber);if(layer)return layer.CanvasCssToLayer(x,y);else return[0,0]}}IsMouseButtonDown(button){button=Math.floor(button);return!!this._buttonMap[button]}_IsMouseOverCanvas(){return this._mouseXcanvas>=0&&this._mouseYcanvas>=0&&this._mouseXcanvas<this._runtime.GetCanvasCssWidth()&&
+this._mouseYcanvas<this._runtime.GetCanvasCssHeight()}_OnPointerLockChange(e){this._UpdatePointerLockState(e["has-pointer-lock"])}_OnPointerLockError(e){this._UpdatePointerLockState(e["has-pointer-lock"]);this.Trigger(C3.Plugins.Mouse.Cnds.OnPointerLockError)}_UpdatePointerLockState(hasPointerLock){if(this._hasPointerLock===hasPointerLock)return;this._hasPointerLock=hasPointerLock;if(this._hasPointerLock)this.Trigger(C3.Plugins.Mouse.Cnds.OnPointerLocked);else this.Trigger(C3.Plugins.Mouse.Cnds.OnPointerUnlocked)}GetDebuggerProperties(){const prefix=
+"plugins.mouse";return[{title:prefix+".name",properties:[{name:prefix+".debugger.absolute-position",value:this._mouseXcanvas+","+this._mouseYcanvas},{name:prefix+".debugger.left-button",value:this._buttonMap[0]},{name:prefix+".debugger.middle-button",value:this._buttonMap[1]},{name:prefix+".debugger.right-button",value:this._buttonMap[2]}]},{title:prefix+".debugger.position-on-each-layer",properties:this._runtime.GetMainRunningLayout().GetLayers().map(layer=>({name:"$"+layer.GetName(),value:layer.CanvasCssToLayer(this._mouseXcanvas,
+this._mouseYcanvas).join(", ")}))}]}}}
+{const C3=self.C3;C3.Plugins.Mouse.Cnds={OnClick(button,type){return this._triggerButton===button&&this._triggerType===type},OnAnyClick(){return true},IsButtonDown(button){return this._buttonMap[button]},OnRelease(button){return this._triggerButton===button},IsOverObject(objectClass){if(!this._IsMouseOverCanvas())return false;const cnd=this._runtime.GetCurrentCondition();const isInverted=cnd.IsInverted();const mx=this._mouseXcanvas;const my=this._mouseYcanvas;return C3.xor(this._runtime.GetCollisionEngine().TestAndSelectCanvasPointOverlap(objectClass,
+mx,my,isInverted),isInverted)},OnObjectClicked(button,type,objectClass){if(button!==this._triggerButton||type!==this._triggerType)return false;if(!this._IsMouseOverCanvas())return false;const mx=this._mouseXcanvas;const my=this._mouseYcanvas;return this._runtime.GetCollisionEngine().TestAndSelectCanvasPointOverlap(objectClass,mx,my,false)},OnWheel(dir){return this._triggerDir===dir},OnPointerLocked(){return true},OnPointerUnlocked(){return true},OnPointerLockError(){return true},HasPointerLock(){return this._hasPointerLock},
+OnMovement(){return true}}}
+{const C3=self.C3;let lastSetCursor=null;const CURSOR_STYLES=["auto","pointer","text","crosshair","move","help","wait","none"];C3.Plugins.Mouse.Acts={SetCursor(c){const cursorStyle=CURSOR_STYLES[c];if(lastSetCursor===cursorStyle)return;lastSetCursor=cursorStyle;this.PostToDOM("cursor",cursorStyle)},SetCursorSprite(objectClass){if(C3.Platform.IsMobile||!objectClass)return;const inst=objectClass.GetFirstPicked();if(!inst)return;const wi=inst.GetWorldInfo();const imageInfo=inst.GetCurrentImageInfo();
+if(!wi||!imageInfo)return;if(lastSetCursor===imageInfo)return;lastSetCursor=imageInfo;imageInfo.ExtractImageToCanvas().then(canvas=>C3.CanvasToBlob(canvas)).then(blob=>{const url=URL.createObjectURL(blob);const cursorStyle=`url(${url}) ${Math.round(wi.GetOriginX()*imageInfo.GetWidth())} ${Math.round(wi.GetOriginY()*imageInfo.GetHeight())}, auto`;this.PostToDOM("cursor","");this.PostToDOM("cursor",cursorStyle)})},RequestPointerLock(){this._PostToDOMMaybeSync("request-pointer-lock")},ReleasePointerLock(){this.PostToDOM("release-pointer-lock")}}}
+{const C3=self.C3;C3.Plugins.Mouse.Exps={X(layerParam){return this.GetMousePositionForLayer(layerParam)[0]},Y(layerParam){return this.GetMousePositionForLayer(layerParam)[1]},AbsoluteX(){return this._mouseXcanvas},AbsoluteY(){return this._mouseYcanvas},MovementX(){return this._movementX},MovementY(){return this._movementY}}};
+
+}
+
+{
 'use strict';{const C3=self.C3;C3.Behaviors.solid=class SolidBehavior extends C3.SDKBehaviorBase{constructor(opts){super(opts)}Release(){super.Release()}}}{const C3=self.C3;C3.Behaviors.solid.Type=class SolidType extends C3.SDKBehaviorTypeBase{constructor(behaviorType){super(behaviorType)}Release(){super.Release()}OnCreate(){}}}
 {const C3=self.C3;const ENABLE=0;const TAGS=1;const EMPTY_SET=new Set;C3.Behaviors.solid.Instance=class SolidInstance extends C3.SDKBehaviorInstanceBase{constructor(behInst,properties){super(behInst);this.SetEnabled(true);if(properties){this.SetEnabled(properties[ENABLE]);this.SetTags(properties[TAGS])}}Release(){super.Release()}SetEnabled(e){this._inst._SetSolidEnabled(!!e)}IsEnabled(){return this._inst._IsSolidEnabled()}SetTags(tagList){const savedDataMap=this._inst.GetSavedDataMap();if(!tagList.trim()){savedDataMap.delete("solidTags");
 return}let solidTags=savedDataMap.get("solidTags");if(!solidTags){solidTags=new Set;savedDataMap.set("solidTags",solidTags)}solidTags.clear();for(const tag of tagList.split(" "))if(tag)solidTags.add(tag.toLowerCase())}GetTags(){return this._inst.GetSavedDataMap().get("solidTags")||EMPTY_SET}SaveToJson(){return{"e":this.IsEnabled()}}LoadFromJson(o){this.SetEnabled(o["e"])}GetPropertyValueByIndex(index){switch(index){case ENABLE:return this.IsEnabled()}}SetPropertyValueByIndex(index,value){switch(index){case ENABLE:this.SetEnabled(value);
@@ -3677,6 +3700,20 @@ this._dy);const bounceAngle=collisionEngine.CalculateBounceAngle(this._inst,this
 }
 
 {
+'use strict';{const C3=self.C3;C3.Behaviors.Fade=class FadeBehavior extends C3.SDKBehaviorBase{constructor(opts){super(opts)}Release(){super.Release()}}}{const C3=self.C3;C3.Behaviors.Fade.Type=class FadeType extends C3.SDKBehaviorTypeBase{constructor(behaviorType){super(behaviorType)}Release(){super.Release()}OnCreate(){}}}
+{const C3=self.C3;const FADE_IN_TIME=0;const WAIT_TIME=1;const FADE_OUT_TIME=2;const DESTROY=3;const ACTIVE_AT_START=4;C3.Behaviors.Fade.Instance=class FadeInstance extends C3.SDKBehaviorInstanceBase{constructor(behInst,properties){super(behInst);this._fadeInTime=0;this._waitTime=0;this._fadeOutTime=0;this._destroy=true;this._activeAtStart=true;this._setMaxOpacity=false;this._stage=0;this._stageTime=C3.New(C3.KahanSum);this._maxOpacity=this._inst.GetWorldInfo().GetOpacity()||1;if(properties){this._fadeInTime=
+properties[FADE_IN_TIME];this._waitTime=properties[WAIT_TIME];this._fadeOutTime=properties[FADE_OUT_TIME];this._destroy=!!properties[DESTROY];this._activeAtStart=!!properties[ACTIVE_AT_START];this._stage=this._activeAtStart?0:3}if(this._activeAtStart)if(this._fadeInTime===0){this._stage=1;if(this._waitTime===0)this._stage=2}else{this._inst.GetWorldInfo().SetOpacity(0);this._runtime.UpdateRender()}this._StartTicking()}Release(){super.Release()}SaveToJson(){return{"fit":this._fadeInTime,"wt":this._waitTime,
+"fot":this._fadeOutTime,"d":this._destroy,"s":this._stage,"st":this._stageTime.Get(),"mo":this._maxOpacity}}LoadFromJson(o){this._fadeInTime=o["fit"];this._waitTime=o["wt"];this._fadeOutTime=o["fot"];this._destroy=o["d"];this._stage=o["s"];this._stageTime.Set(o["st"]);this._maxOpacity=o["mo"]}Tick(){const dt=this._runtime.GetDt(this._inst);this._stageTime.Add(dt);const wi=this._inst.GetWorldInfo();if(this._stage===0){wi.SetOpacity(this._stageTime.Get()/this._fadeInTime*this._maxOpacity);this._runtime.UpdateRender();
+if(wi.GetOpacity()>=this._maxOpacity){wi.SetOpacity(this._maxOpacity);this._stage=1;this._stageTime.Reset();this.Trigger(C3.Behaviors.Fade.Cnds.OnFadeInEnd)}}if(this._stage===1)if(this._stageTime.Get()>=this._waitTime){this._stage=2;this._stageTime.Reset();this.Trigger(C3.Behaviors.Fade.Cnds.OnWaitEnd)}if(this._stage===2)if(this._fadeOutTime!==0){wi.SetOpacity(this._maxOpacity-this._stageTime.Get()/this._fadeOutTime*this._maxOpacity);this._runtime.UpdateRender();if(wi.GetOpacity()<=0){this._stage=
+3;this._stageTime.Reset();this.Trigger(C3.Behaviors.Fade.Cnds.OnFadeOutEnd);if(this._destroy)this._runtime.DestroyInstance(this._inst)}}}Start(){this._stage=0;this._stageTime.Reset();if(this._fadeInTime===0){this._stage=1;if(this._waitTime===0)this._stage=2}else{this._inst.GetWorldInfo().SetOpacity(0);this._runtime.UpdateRender()}}GetPropertyValueByIndex(index){switch(index){case FADE_IN_TIME:return this._fadeInTime;case WAIT_TIME:return this._waitTime;case FADE_OUT_TIME:return this._fadeOutTime;
+case DESTROY:return this._destroy}}SetPropertyValueByIndex(index,value){switch(index){case FADE_IN_TIME:this._fadeInTime=value;break;case WAIT_TIME:this._waitTime=value;break;case FADE_OUT_TIME:this._fadeOutTime=value;break;case DESTROY:this._destroy=!!value;break}}GetDebuggerProperties(){const prefix="behaviors.fade";return[{title:"$"+this.GetBehaviorType().GetName(),properties:[{name:prefix+".properties.fade-in-time.name",value:this._fadeInTime,onedit:v=>this._fadeInTime=v},{name:prefix+".properties.wait-time.name",
+value:this._waitTime,onedit:v=>this._waitTime=v},{name:prefix+".properties.fade-out-time.name",value:this._fadeOutTime,onedit:v=>this._fadeOutTime=v},{name:prefix+".debugger.stage",value:[prefix+".debugger."+["fade-in","wait","fade-out","done"][this._stage]]}]}]}}}{const C3=self.C3;C3.Behaviors.Fade.Cnds={OnFadeOutEnd(){return true},OnFadeInEnd(){return true},OnWaitEnd(){return true}}}
+{const C3=self.C3;C3.Behaviors.Fade.Acts={StartFade(){if(!this._activeAtStart&&!this._setMaxOpacity){this._maxOpacity=this._inst.GetWorldInfo().GetOpacity()||1;this._setMaxOpacity=true}if(this._stage===3)this.Start()},RestartFade(){this.Start()},SetFadeInTime(t){if(t<0)t=0;this._fadeInTime=t},SetWaitTime(t){if(t<0)t=0;this._waitTime=t},SetFadeOutTime(t){if(t<0)t=0;this._fadeOutTime=t}}}
+{const C3=self.C3;C3.Behaviors.Fade.Exps={FadeInTime(){return this._fadeInTime},WaitTime(){return this._waitTime},FadeOutTime(){return this._fadeOutTime}}};
+
+}
+
+{
 const C3 = self.C3;
 self.C3_GetObjectRefTable = function () {
 	return [
@@ -3690,6 +3727,8 @@ self.C3_GetObjectRefTable = function () {
 		C3.Behaviors.Bullet,
 		C3.Plugins.Keyboard,
 		C3.Plugins.Touch,
+		C3.Behaviors.Fade,
+		C3.Plugins.Mouse,
 		C3.Plugins.System.Cnds.OnLayoutStart,
 		C3.Behaviors.Pathfinding.Acts.AddObstacle,
 		C3.Behaviors.Pathfinding.Acts.RegenerateMap,
@@ -3701,13 +3740,16 @@ self.C3_GetObjectRefTable = function () {
 		C3.Behaviors.LOS.Cnds.HasLOSToObject,
 		C3.Behaviors.Pathfinding.Acts.Stop,
 		C3.Plugins.Sprite.Acts.Spawn,
-		C3.Plugins.Touch.Cnds.OnHoldGestureObject,
+		C3.Plugins.Touch.Cnds.OnTapGestureObject,
 		C3.Behaviors.Car.Acts.SimulateControl,
+		C3.Plugins.Touch.Cnds.OnHoldGestureObject,
 		C3.Plugins.Keyboard.Cnds.OnKey,
 		C3.Plugins.Sprite.Cnds.OnCollision,
 		C3.Plugins.Sprite.Acts.Destroy,
 		C3.Plugins.System.Acts.Wait,
-		C3.Plugins.System.Acts.RestartLayout
+		C3.Plugins.System.Acts.RestartLayout,
+		C3.Plugins.System.Acts.CreateObject,
+		C3.Plugins.System.Exps.random
 	];
 };
 self.C3_JsPropNameTable = [
@@ -3729,7 +3771,9 @@ self.C3_JsPropNameTable = [
 	{Esquerda: 0},
 	{Baixo: 0},
 	{Atirar: 0},
-	{Explosao: 0}
+	{Esmaecer: 0},
+	{Explosao: 0},
+	{Mouse: 0}
 ];
 }
 
@@ -3838,7 +3882,16 @@ self.C3_ExpressionFuncs = [
 		() => 0.5,
 		() => 0,
 		() => 1,
-		() => 5
+		() => 5,
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0(500, 1000);
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0(500, 1200);
+		},
+		() => ""
 ];
 
 
