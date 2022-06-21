@@ -3703,7 +3703,6 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Sprite.Acts.Spawn,
 		C3.Plugins.Touch.Cnds.OnHoldGestureObject,
 		C3.Behaviors.Car.Acts.SimulateControl,
-		C3.Plugins.Touch.Cnds.OnHoldGesture,
 		C3.Plugins.Keyboard.Cnds.OnKey,
 		C3.Plugins.Sprite.Cnds.OnCollision,
 		C3.Plugins.Sprite.Acts.Destroy,
