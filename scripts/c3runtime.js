@@ -3789,7 +3789,10 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Text.Acts.SetText,
 		C3.Plugins.System.Acts.RestartLayout,
 		C3.Plugins.System.Acts.CreateObject,
-		C3.Plugins.System.Exps.random
+		C3.Plugins.System.Exps.random,
+		C3.Plugins.Sprite.Acts.MoveToBottom,
+		C3.Plugins.System.Cnds.CompareVar,
+		C3.Plugins.Text.Acts.SetVisible
 	];
 };
 self.C3_JsPropNameTable = [
@@ -3816,6 +3819,7 @@ self.C3_JsPropNameTable = [
 	{Mouse: 0},
 	{Texto2: 0},
 	{Texto: 0},
+	{Sucesso: 0},
 	{placar: 0}
 ];
 }
