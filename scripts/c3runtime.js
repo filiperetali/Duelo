@@ -3788,11 +3788,9 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.System.Acts.AddVar,
 		C3.Plugins.Text.Acts.SetText,
 		C3.Plugins.System.Acts.RestartLayout,
-		C3.Plugins.System.Acts.CreateObject,
-		C3.Plugins.System.Exps.random,
-		C3.Plugins.Sprite.Acts.MoveToBottom,
 		C3.Plugins.System.Cnds.CompareVar,
-		C3.Plugins.Text.Acts.SetVisible
+		C3.Plugins.Text.Acts.SetVisible,
+		C3.Plugins.System.Acts.CreateObject
 	];
 };
 self.C3_JsPropNameTable = [
@@ -3820,6 +3818,8 @@ self.C3_JsPropNameTable = [
 	{Texto2: 0},
 	{Texto: 0},
 	{Sucesso: 0},
+	{explosao2: 0},
+	{imageremovebgpreview2: 0},
 	{placar: 0}
 ];
 }
@@ -3934,14 +3934,9 @@ self.C3_ExpressionFuncs = [
 			return () => v0.GetValue();
 		},
 		() => 5,
-		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			return () => f0(500, 1000);
-		},
-		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			return () => f0(500, 1200);
-		},
+		() => 3,
+		() => 600,
+		() => 1000,
 		() => ""
 ];
 
